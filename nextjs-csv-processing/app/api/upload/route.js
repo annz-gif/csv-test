@@ -1,51 +1,26 @@
-import multer from 'multer';
-import { promisify } from 'util';
-import fs from 'fs';
-import csv from 'csv-parser';
-import { NextResponse } from 'next/server';
-
-const upload = multer({ dest: 'uploads/' });
-const uploadMiddleware = promisify(upload.single('file'));
+import { NextResponse } from "next/server";
+import { parse } from "csv-parse/sync";
 
 export async function POST(req) {
     try {
         const formData = await req.formData();
-        const file = formData.get('file');
+        const file = formData.get("file");
 
         if (!file) {
-            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+            return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
         }
 
-        const results = [];
-        const filePath = `uploads/${file.name}`;
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
 
-        // Save the uploaded file
-        const buffer = Buffer.from(await file.arrayBuffer());
-        fs.writeFileSync(filePath, buffer);
+        // Convert buffer to string (CSV content)
+        const csvContent = buffer.toString("utf-8");
 
-        // Parse CSV and wait for completion
-        await new Promise((resolve, reject) => {
-            fs.createReadStream(filePath)
-                .pipe(csv())
-                .on('data', (data) => results.push(data))
-                .on('end', () => {
-                    fs.unlinkSync(filePath); // Clean up file after parsing
-                    resolve();
-                })
-                .on('error', (error) => {
-                    fs.unlinkSync(filePath); // Clean up file on error
-                    reject(error);
-                });
-        });
+        // Parse CSV data into JSON
+        const records = parse(csvContent, { columns: true, skip_empty_lines: true });
 
-        return NextResponse.json({ 
-            message: 'File uploaded and processing completed', 
-            data: results 
-        });
+        return NextResponse.json({ message: "File uploaded successfully!", data: records });
     } catch (error) {
-        return NextResponse.json({ 
-            error: 'File upload or processing failed', 
-            details: error.message 
-        }, { status: 500 });
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
