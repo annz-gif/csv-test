@@ -1,7 +1,7 @@
 # CSV Upload and Parsing with Next.js & Bull Queue
 
 This project is a **Next.js application** that allows users to **upload CSV files**, process them using a **Bull queue**, and store the results efficiently. The backend is powered by **Node.js, Redis, and Bull queue** for handling asynchronous processing.
-
+![image alt]
 ## 📂 Project Structure
 
 nextjs-csv-processing/ │── app/ │ ├── api/ │ │ ├── upload/route.js # API route for file upload │ │ ├── status/route.js # API route to check job status │ ├── Components/ # Frontend components │── uploads/ # Temporary file storage │── queue.js # Bull queue setup │── worker.js # CSV processing worker │── .env.local # Environment variables │── package.json # Project dependencies │── next.config.js # Next.js configuration │── tailwind.config.js # TailwindCSS setup │── README.md # Project documentation
